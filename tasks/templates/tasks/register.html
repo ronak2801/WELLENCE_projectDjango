@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login or Register</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: #343a40;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .tab-content {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Task Manager</h1>
+        <!-- Nav Tabs for Switching Between Login and Register -->
+        <ul class="nav nav-tabs" id="authTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="login-tab" data-toggle="tab" href="#login" role="tab" aria-controls="login" aria-selected="true">Login</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="register-tab" data-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="false">Register</a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="authTabContent">
+            <!-- Login Form -->
+            <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" name="username" id="username" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" name="password" id="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </div>
+
+            <!-- Register Form -->
+            <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
+                <form method="POST" action="{% url 'register' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" name="username" id="username" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" name="email" id="email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password1">Password:</label>
+                        <input type="password" name="password1" id="password1" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password2">Confirm Password:</label>
+                        <input type="password" name="password2" id="password2" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

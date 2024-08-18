@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ user.username }}'s Dashboard</h1>
+
+         <!-- Back to Landing Page Button -->
+         <div class="mb-3">
+            <a href="{% url 'landing_page' %}" class="btn btn-secondary">Back to Landing Page</a>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Charts -->
+            <div class="col-md-6">
+                <h2>Urgent Tasks: {{ task_count }}</h2>
+
+                <!-- Bar Chart for all tasks with different priorities -->
+                <h3>Tasks by Priority (Bar Chart)</h3>
+                <canvas id="tasksPriorityBarChart" style="max-width: 100%;"></canvas>
+                <script>
+                    var tasksPriorityBarData = {
+                        labels: [
+                            {% for task in all_tasks %}
+                                "{{ task.task }}",
+                            {% endfor %}
+                        ],
+                        datasets: [{
+                            label: 'Low Priority',
+                            data: [
+                                {% for task in all_tasks %}
+                                    {% if task.priority == 1 %}
+                                        1,
+                                    {% else %}
+                                        0,
+                                    {% endif %}
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#36A2EB'
+                        }, {
+                            label: 'Medium Priority',
+                            data: [
+                                {% for task in all_tasks %}
+                                    {% if task.priority == 2 %}
+                                        1,
+                                    {% else %}
+                                        0,
+                                    {% endif %}
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#FFCE56'
+                        }, {
+                            label: 'High Priority',
+                            data: [
+                                {% for task in all_tasks %}
+                                    {% if task.priority == 3 %}
+                                        1,
+                                    {% else %}
+                                        0,
+                                    {% endif %}
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#FF6384'
+                        }]
+                    };
+
+                    var tasksPriorityBarChartCtx = document.getElementById('tasksPriorityBarChart').getContext('2d');
+                    var tasksPriorityBarChart = new Chart(tasksPriorityBarChartCtx, {
+                        type: 'bar',
+                        data: tasksPriorityBarData,
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                </script>
+
+                <!-- Pie Chart for tasks by priority -->
+                <h3>Tasks by Priority (Pie Chart)</h3>
+                <canvas id="tasksByPriorityPieChart" style="max-width: 100%;"></canvas>
+                <script>
+                    var tasksByPriorityPieData = {
+                        labels: ['Low', 'Medium', 'High'],
+                        datasets: [{
+                            data: [
+                                {% for task in tasks_by_priority %}
+                                    {{ task.count }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384']
+                        }]
+                    };
+
+                    var tasksByPriorityPieChartCtx = document.getElementById('tasksByPriorityPieChart').getContext('2d');
+                    var tasksByPriorityPieChart = new Chart(tasksByPriorityPieChartCtx, {
+                        type: 'pie',
+                        data: tasksByPriorityPieData,
+                    });
+                </script>
+            </div>
+
+            <!-- Right Column: Task List and Add Task Form -->
+            <div class="col-md-6">
+                <h3>All Tasks</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Due By</th>
+                            <th>Priority</th>
+                            <th>Urgent</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="task-list">
+                        {% for task in all_tasks %}
+                        <tr id="task-row-{{ task.id }}">
+                            <td>{{ task.task }}</td>
+                            <td>{{ task.due_by|date:"M d, Y, h:i a" }}</td>
+                            <td>{{ task.get_priority_display }}</td>
+                            <td>{{ task.is_urgent|yesno:"Yes,No" }}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm delete-task-btn" data-task-id="{{ task.id }}">Delete</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h3>Add a New Task</h3>
+                <form id="add-task-form" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="task">Task:</label>
+                        <input type="text" name="task" id="task" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="due_by">Due By:</label>
+                        <input type="datetime-local" name="due_by" id="due_by" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">Priority:</label>
+                        <select name="priority" id="priority" class="form-control">
+                            <option value="1">Low</option>
+                            <option value="2">Medium</option>
+                            <option value="3">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="is_urgent">Is Urgent:</label>
+                        <input type="checkbox" name="is_urgent" id="is_urgent">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Task</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Logout form -->
+        <!-- Include this in your template where the logout button/form is -->
+        <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Logout</button>
+        </form>
+
+    </div>
+
+    <script>
+        // AJAX to handle task addition
+        $('#add-task-form').submit(function(event) {
+            event.preventDefault();
+
+            $.ajax({
+                url: "{% url 'add_task' %}",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function(response) {
+                    // Update the task list with the new task
+                    $('#task-list').prepend(`
+                        <tr id="task-row-${response.id}">
+                            <td>${response.task}</td>
+                            <td>${response.due_by}</td>
+                            <td>${response.priority}</td>
+                            <td>${response.is_urgent}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm delete-task-btn" data-task-id="${response.id}">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+
+                    // Reset the form
+                    $('#add-task-form')[0].reset();
+                },
+                error: function(response) {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+
+        // AJAX to handle task deletion
+        $(document).on('click', '.delete-task-btn', function() {
+            var taskId = $(this).data('task-id');
+            var rowId = '#task-row-' + taskId;
+
+            $.ajax({
+                url: "/delete-task/" + taskId + "/",
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $(rowId).remove();
+                    }
+                },
+                error: function(response) {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

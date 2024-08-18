@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            margin-top: 30px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #343a40;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h3 {
+            color: #495057;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 5px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        table thead {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+
+        table tbody tr {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        table td {
+            padding: 12px;
+            vertical-align: middle;
+        }
+
+        table .btn-sm {
+            font-size: 0.85em;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>{{ user.username }}'s Dashboard</h1>
+
+        <!-- View Dashboard Button -->
+        <div class="mb-3 text-center">
+            <a href="{% url 'user_dashboard' %}" class="btn btn-success">View Dashboard</a>
+        </div>
+
+        <div class="row">
+            <!-- Task Form -->
+            <div class="col-md-6">
+                <h3>Add a New Task</h3>
+                <form id="add-task-form" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="task">Task:</label>
+                        <input type="text" name="task" id="task" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="due_by">Due By:</label>
+                        <input type="datetime-local" name="due_by" id="due_by" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">Priority:</label>
+                        <select name="priority" id="priority" class="form-control">
+                            <option value="1">Low</option>
+                            <option value="2">Medium</option>
+                            <option value="3">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="is_urgent">Is Urgent:</label>
+                        <input type="checkbox" name="is_urgent" id="is_urgent">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Task</button>
+                </form>
+            </div>
+
+            <!-- Right Column: Task List -->
+            <div class="col-md-6">
+                <h3>All Tasks</h3>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Due By</th>
+                            <th>Priority</th>
+                            <th>Urgent</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="task-list">
+                        {% for task in all_tasks %}
+                        <tr id="task-row-{{ task.id }}">
+                            <td>{{ task.task }}</td>
+                            <td>{{ task.due_by|date:"M d, Y, h:i a" }}</td>
+                            <td>{{ task.get_priority_display }}</td>
+                            <td>{{ task.is_urgent|yesno:"Yes,No" }}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm delete-task-btn" data-task-id="{{ task.id }}">Delete</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Logout form -->
+        <div class="text-center mt-4">
+            <form method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // AJAX to handle task addition
+        $('#add-task-form').submit(function(event) {
+            event.preventDefault();
+
+            $.ajax({
+                url: "{% url 'add_task' %}",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function(response) {
+                    // Update the task list with the new task
+                    $('#task-list').prepend(`
+                        <tr id="task-row-${response.id}">
+                            <td>${response.task}</td>
+                            <td>${response.due_by}</td>
+                            <td>${response.priority}</td>
+                            <td>${response.is_urgent}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm delete-task-btn" data-task-id="${response.id}">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+
+                    // Reset the form
+                    $('#add-task-form')[0].reset();
+                },
+                error: function(response) {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+
+        // AJAX to handle task deletion
+        $(document).on('click', '.delete-task-btn', function() {
+            var taskId = $(this).data('task-id');
+            var rowId = '#task-row-' + taskId;
+
+            $.ajax({
+                url: "/delete-task/" + taskId + "/",
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $(rowId).remove();
+                    }
+                },
+                error: function(response) {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
