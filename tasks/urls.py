@@ -6,19 +6,14 @@ from tasks import views as tasks_views
 urlpatterns = [
     # Admin site
     path('admin/', admin.site.urls),
-
-    # Combined Register/Login view as root
+    # Combined Register
     path('', tasks_views.register_login_combined, name='register_login'),
-
     # User dashboard
     path('dashboard/', tasks_views.user_dashboard, name='user_dashboard'),
-
     # Landing page
     path('landing/', tasks_views.landing_page, name='landing_page'),
-
     # Logout
     path('logout/', tasks_views.CustomLogoutView.as_view(), name='logout'),
-
     # Task management URLs
     path('add-task/', tasks_views.add_task, name='add_task'),
     path('edit-task/<int:task_id>/', tasks_views.edit_task, name='edit_task'),
