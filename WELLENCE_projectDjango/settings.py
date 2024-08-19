@@ -82,6 +82,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # URL to redirect if the user needs to log in
 
-LOGIN_URL = 'login'  # This should correspond to your login URL pattern name
-LOGIN_REDIRECT_URL = 'user_dashboard'  # After login, redirect here
-LOGOUT_REDIRECT_URL = 'register_login'  # After logout, redirect to the combined login/register page
+LOGIN_URL = 'login'  # login URL 
+LOGIN_REDIRECT_URL = 'user_dashboard'  # redirect here
+LOGOUT_REDIRECT_URL = 'register_login'  #login/register page

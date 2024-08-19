@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm  # Add this import
+from django.contrib.auth.forms import AuthenticationForm  
 from django.contrib.auth.views import LogoutView
 from django.http import JsonResponse
 from django.utils import timezone
@@ -11,8 +11,7 @@ from .models import Task
 from .forms import TaskForm, CustomUserCreationForm
 
 def some_function():
-    from .models import Task  # Import within the function
-    # Use Task here
+    from .models import Task 
     
 # Combined Registration and Login View
 def register_login_combined(request):
@@ -68,7 +67,7 @@ def user_dashboard(request):
     }
     return render(request, 'tasks/user_dashboard.html', context)
 
-# Add Task View (with AJAX support)
+# Add Task View 
 @login_required
 def add_task(request):
     if request.method == 'POST':
@@ -82,7 +81,7 @@ def add_task(request):
                 return JsonResponse({
                     'id': task.id,
                     'task': task.task,
-                    'due_by': task.due_by.strftime('%b %d, %Y, %I:%M %p'),
+                    'due_by': task.due_by.strftime('%b %d, %Y, %I:%M %p'), 
                     'priority': task.get_priority_display(),
                     'is_urgent': 'Yes' if task.is_urgent else 'No'
                 })
@@ -108,7 +107,7 @@ def edit_task(request, task_id):
     context = {'form': form, 'task': task}
     return render(request, 'tasks/edit_task.html', context)
 
-# Delete Task View (with AJAX support)
+# Delete Task View
 @login_required
 def delete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
@@ -117,7 +116,7 @@ def delete_task(request, task_id):
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
 
-# Data View for Dashboard (optional)
+# Data View for Dashboard
 @login_required
 def tasks_data(request):
     now = timezone.now()

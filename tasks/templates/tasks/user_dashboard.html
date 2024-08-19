@@ -12,7 +12,7 @@
     <div class="container">
         <h1>{{ user.username }}'s Dashboard</h1>
 
-         <!-- Back to Landing Page Button -->
+         
          <div class="mb-3">
             <a href="{% url 'landing_page' %}" class="btn btn-secondary">Back to Landing Page</a>
         </div>
@@ -166,7 +166,6 @@
         </div>
 
         <!-- Logout form -->
-        <!-- Include this in your template where the logout button/form is -->
         <form method="POST" action="{% url 'logout' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary">Logout</button>
@@ -175,7 +174,6 @@
     </div>
 
     <script>
-        // AJAX to handle task addition
         $('#add-task-form').submit(function(event) {
             event.preventDefault();
 
@@ -184,7 +182,6 @@
                 type: "POST",
                 data: $(this).serialize(),
                 success: function(response) {
-                    // Update the task list with the new task
                     $('#task-list').prepend(`
                         <tr id="task-row-${response.id}">
                             <td>${response.task}</td>
@@ -205,8 +202,6 @@
                 }
             });
         });
-
-        // AJAX to handle task deletion
         $(document).on('click', '.delete-task-btn', function() {
             var taskId = $(this).data('task-id');
             var rowId = '#task-row-' + taskId;
